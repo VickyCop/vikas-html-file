@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Text Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #181c27;
+      --card:    #1e2235;
+      --border:  #2a2f45;
+      --accent:  #4f8ef7;
+      --accent2: #7c5cfc;
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --text:    #e8eaf0;
+      --muted:   #6b7280;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      padding: 2rem 1rem 4rem;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(79,142,247,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(124,92,252,0.06) 0%, transparent 60%);
+    }
+
+    /* HEADER */
+    .header {
+      max-width: 760px;
+      margin: 0 auto 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-left h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #e8eaf0 30%, #4f8ef7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-left p { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
+    .count-badge {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+    }
+    .count-badge span { color: var(--accent); font-weight: 500; }
+
+    /* ADD BUTTON */
+    .add-btn { max-width: 760px; margin: 0 auto 1.5rem; }
+    button.btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.7rem 1.6rem;
+      border: none;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(79,142,247,0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    button.btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(79,142,247,0.45); }
+    button.btn-add:active { transform: translateY(0); }
+
+    /* INPUT PANEL */
+    .input-panel {
+      max-width: 760px;
+      margin: 0 auto 1.8rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: none;
+      animation: slideDown 0.25s cubic-bezier(.17,.67,.32,1.2) both;
+    }
+    .input-panel.open { display: block; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .input-panel label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
+    }
+    .input-panel textarea {
+      width: 100%;
+      min-height: 100px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.8rem 1rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-panel textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
+    }
+    .input-panel textarea::placeholder { color: var(--muted); }
+    .panel-actions { display: flex; gap: 0.75rem; margin-top: 1rem; justify-content: flex-end; }
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.3rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-cancel:hover { border-color: var(--muted); color: var(--text); }
+    .btn-submit {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-submit:hover { background: #3a7de8; }
+    .btn-submit:active { transform: scale(0.97); }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: 1.5rem; right: 1.5rem;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 0.7rem 1.2rem;
+      border-radius: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast.success { background: var(--green); box-shadow: 0 8px 24px rgba(34,197,94,0.35); }
+    .toast.copy    { background: var(--accent2); box-shadow: 0 8px 24px rgba(124,92,252,0.35); }
+    .toast.cleared { background: var(--red); box-shadow: 0 8px 24px rgba(239,68,68,0.35); }
+
+    /* TABLE */
+    .table-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-header h2 { font-size: 0.95rem; font-weight: 600; }
+    .table-header span { font-size: 0.78rem; color: var(--muted); }
+
+    .empty-state { text-align: center; padding: 3.5rem 2rem; color: var(--muted); }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; opacity: 0.5; }
+    .empty-state p { font-size: 0.9rem; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface); }
+    thead th {
+      padding: 0.75rem 1.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      text-align: left;
+    }
+    thead th:last-child { text-align: center; width: 120px; }
+    tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:hover { background: rgba(79,142,247,0.04); }
+    tbody td { padding: 1rem 1.4rem; font-size: 0.9rem; color: var(--text); vertical-align: top; }
+    tbody td:first-child { line-height: 1.6; max-width: 560px; word-break: break-word; }
+    .td-inner { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .row-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      min-width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 0.3rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .row-meta { font-size: 0.72rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 0.25rem; }
+    tbody td:last-child { text-align: center; vertical-align: middle; }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-copy:hover { background: rgba(124,92,252,0.12); border-color: var(--accent2); color: #a78bfa; }
+    .btn-copy.copied { background: rgba(34,197,94,0.1); border-color: var(--green); color: var(--green); }
+
+    /* CLEAR BUTTON */
+    .clear-section {
+      max-width: 760px;
+      margin: 1.8rem auto 0;
+      display: flex;
+      justify-content: center;
+    }
+    .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      border: 1.5px solid rgba(239,68,68,0.4);
+      color: rgba(239,68,68,0.75);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 0.65rem 2rem;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.1s;
+    }
+    .btn-clear:hover { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); transform: translateY(-1px); }
+    .btn-clear:active { transform: scale(0.97); }
+
+    /* CONFIRM DIALOG */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 8888;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.show { display: flex; }
+    .confirm-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      animation: slideDown 0.2s ease both;
+    }
+    .confirm-box .icon { font-size: 2.2rem; display: block; margin-bottom: 0.8rem; }
+    .confirm-box h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .confirm-box p { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+    .confirm-btns { display: flex; gap: 0.75rem; justify-content: center; }
+    .btn-no {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-no:hover { color: var(--text); border-color: var(--muted); }
+    .btn-yes {
+      background: var(--red);
+      border: none;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-yes:hover { background: #dc2626; }
+    .btn-yes:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Confirm Dialog -->
+  <div class="overlay" id="overlay">
+    <div class="confirm-box">
+      <span class="icon">🗑️</span>
+      <h3>Clear All Entries?</h3>
+      <p>This will permanently delete all <strong id="confirmCount">0</strong> entries. This cannot be undone.</p>
+      <div class="confirm-btns">
+        <button class="btn-no" onclick="closeConfirm()">Cancel</button>
+        <button class="btn-yes" onclick="confirmClear()">Yes, Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>📋 Text Manager</h1>
+      <p>Add, manage and copy your text entries</p>
+    </div>
+    <div class="count-badge">Total: <span id="count">0</span> entries</div>
+  </div>
+
+  <!-- Add Button -->
+  <div class="add-btn">
+    <button class="btn-add" onclick="togglePanel()">
+      <span style="font-size:1.2rem;font-weight:300;">＋</span> Add New Text
+    </button>
+  </div>
+
+  <!-- Input Panel -->
+  <div class="input-panel" id="inputPanel">
+    <label>Enter your text</label>
+    <textarea id="textInput" placeholder="Type or paste your text here…"></textarea>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closePanel()">Cancel</button>
+      <button class="btn-submit" onclick="submitText()">Submit ↵</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>Saved Entries</h2>
+      <span id="tableCount">No entries yet</span>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon">🗂️</span>
+      <p>No text added yet. Click <strong>Add New Text</strong> to get started.</p>
+    </div>
+    <table id="dataTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Text Data</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Clear All Button -->
+  <div class="clear-section">
+    <button class="btn-clear" onclick="openConfirm()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+      Clear All
+    </button>
+  </div>
+
+  <script>
+    let entries = [];
+    let toastTimer = null;
+
+    function togglePanel() {
+      const panel = document.getElementById('inputPanel');
+      if (panel.classList.contains('open')) { closePanel(); }
+      else {
+        panel.classList.add('open');
+        setTimeout(() => document.getElementById('textInput').focus(), 50);
+      }
+    }
+
+    function closePanel() {
+      document.getElementById('inputPanel').classList.remove('open');
+      document.getElementById('textInput').value = '';
+    }
+
+    function submitText() {
+      const input = document.getElementById('textInput');
+      const val = input.value.trim();
+      if (!val) {
+        input.style.borderColor = '#ef4444';
+        input.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.12)';
+        input.placeholder = '⚠️ Please enter some text first…';
+        setTimeout(() => {
+          input.style.borderColor = '';
+          input.style.boxShadow = '';
+          input.placeholder = 'Type or paste your text here…';
+        }, 1800);
+        return;
+      }
+      const now = new Date();
+      const timeStr = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+                    + ' · ' + now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      entries.unshift({ text: val, time: timeStr });
+      renderTable();
+      closePanel();
+      showToast('✅ Text added successfully!', 'success');
+    }
+
+    function renderTable() {
+      const tbody  = document.getElementById('tableBody');
+      const empty  = document.getElementById('emptyState');
+      const table  = document.getElementById('dataTable');
+      document.getElementById('count').textContent = entries.length;
+      document.getElementById('tableCount').textContent = entries.length
+        ? entries.length + (entries.length === 1 ? ' entry' : ' entries')
+        : 'No entries yet';
+
+      if (entries.length === 0) { empty.style.display = 'block'; table.style.display = 'none'; return; }
+      empty.style.display = 'none';
+      table.style.display = 'table';
+      tbody.innerHTML = '';
+      entries.forEach((entry, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div class="td-inner">
+              <span class="row-num">${entries.length - i}</span>
+              <div>
+                <div>${escHtml(entry.text)}</div>
+                <div class="row-meta">🕐 ${entry.time}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <button class="btn-copy" onclick="copyText(this, ${i})">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>Copy
+            </button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function copyText(btn, index) {
+      navigator.clipboard.writeText(entries[index].text).then(() => {
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
+        btn.classList.add('copied');
+        showToast('📋 Copied to clipboard!', 'copy');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy`;
+        }, 2000);
+      });
+    }
+
+    function openConfirm() {
+      if (entries.length === 0) { showToast('ℹ️ Nothing to clear!', 'cleared'); return; }
+      document.getElementById('confirmCount').textContent = entries.length;
+      document.getElementById('overlay').classList.add('show');
+    }
+    function closeConfirm() { document.getElementById('overlay').classList.remove('show'); }
+    function confirmClear() {
+      entries = [];
+      renderTable();
+      closeConfirm();
+      showToast('🗑️ All entries cleared!', 'cleared');
+    }
+
+    function showToast(msg, type) {
+      const toast = document.getElementById('toast');
+      if (toastTimer) clearTimeout(toastTimer);
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        if (document.getElementById('inputPanel').classList.contains('open')) submitText();
+      }
+      if (e.key === 'Escape') { closePanel(); closeConfirm(); }
+    });
+    document.getElementById('overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeConfirm();
+    });
+  </script>
+</body>
+</html>
