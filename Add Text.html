@@ -414,9 +414,22 @@
   </div>
 
   <script>
+    const STORAGE_KEY = 'textManagerEntries';
     let entries = [];
     let toastTimer = null;
 
+    // ── STORAGE ──────────────────────────────────
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        entries = raw ? JSON.parse(raw) : [];
+      } catch(e) { entries = []; }
+    }
+
+    // ── PANEL ────────────────────────────────────
     function togglePanel() {
       const panel = document.getElementById('inputPanel');
       if (panel.classList.contains('open')) { closePanel(); }
@@ -425,12 +438,12 @@
         setTimeout(() => document.getElementById('textInput').focus(), 50);
       }
     }
-
     function closePanel() {
       document.getElementById('inputPanel').classList.remove('open');
       document.getElementById('textInput').value = '';
     }
 
+    // ── SUBMIT ───────────────────────────────────
     function submitText() {
       const input = document.getElementById('textInput');
       const val = input.value.trim();
@@ -449,21 +462,27 @@
       const timeStr = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
                     + ' · ' + now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
       entries.unshift({ text: val, time: timeStr });
+      saveData();          // 💾 persist
       renderTable();
       closePanel();
       showToast('✅ Text added successfully!', 'success');
     }
 
+    // ── RENDER TABLE ─────────────────────────────
     function renderTable() {
-      const tbody  = document.getElementById('tableBody');
-      const empty  = document.getElementById('emptyState');
-      const table  = document.getElementById('dataTable');
+      const tbody = document.getElementById('tableBody');
+      const empty = document.getElementById('emptyState');
+      const table = document.getElementById('dataTable');
       document.getElementById('count').textContent = entries.length;
       document.getElementById('tableCount').textContent = entries.length
         ? entries.length + (entries.length === 1 ? ' entry' : ' entries')
         : 'No entries yet';
 
-      if (entries.length === 0) { empty.style.display = 'block'; table.style.display = 'none'; return; }
+      if (entries.length === 0) {
+        empty.style.display = 'block';
+        table.style.display = 'none';
+        return;
+      }
       empty.style.display = 'none';
       table.style.display = 'table';
       tbody.innerHTML = '';
@@ -490,6 +509,7 @@
       });
     }
 
+    // ── COPY ─────────────────────────────────────
     function copyText(btn, index) {
       navigator.clipboard.writeText(entries[index].text).then(() => {
         btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
@@ -502,6 +522,7 @@
       });
     }
 
+    // ── CLEAR ────────────────────────────────────
     function openConfirm() {
       if (entries.length === 0) { showToast('ℹ️ Nothing to clear!', 'cleared'); return; }
       document.getElementById('confirmCount').textContent = entries.length;
@@ -510,11 +531,13 @@
     function closeConfirm() { document.getElementById('overlay').classList.remove('show'); }
     function confirmClear() {
       entries = [];
+      saveData();          // 💾 wipe storage too
       renderTable();
       closeConfirm();
       showToast('🗑️ All entries cleared!', 'cleared');
     }
 
+    // ── TOAST ────────────────────────────────────
     function showToast(msg, type) {
       const toast = document.getElementById('toast');
       if (toastTimer) clearTimeout(toastTimer);
@@ -527,6 +550,7 @@
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>');
     }
 
+    // ── KEYBOARD SHORTCUTS ───────────────────────
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         if (document.getElementById('inputPanel').classList.contains('open')) submitText();
@@ -536,6 +560,10 @@
     document.getElementById('overlay').addEventListener('click', function(e) {
       if (e.target === this) closeConfirm();
     });
+
+    // ── INIT: load saved data on page open ───────
+    loadData();
+    renderTable();
   </script>
 </body>
 </html>
