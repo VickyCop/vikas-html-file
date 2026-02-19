@@ -133,54 +133,128 @@
     #congrats-screen {
       display: none;
       text-align: center;
-      padding: 3rem 2.5rem;
+      padding: 0;
       background: linear-gradient(145deg, #1a0a12, #2b0d1e);
-      border: 1px solid rgba(247,201,72,0.3);
+      border: 1px solid rgba(247,201,72,0.35);
       border-radius: 2rem;
-      box-shadow: 0 0 100px rgba(247,201,72,0.2);
-      max-width: 520px;
+      box-shadow: 0 0 120px rgba(232,71,106,0.35), 0 0 60px rgba(247,201,72,0.15);
+      max-width: 480px;
       width: 90%;
       position: relative;
       z-index: 10;
-      animation: cardIn 0.8s cubic-bezier(.17,.67,.32,1.3) both;
+      overflow: hidden;
+      animation: cardIn 0.9s cubic-bezier(.17,.67,.32,1.3) both;
     }
 
-    .congrats-gif {
-      width: 200px;
-      border-radius: 1rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 0 30px rgba(247,201,72,0.4);
+    /* Love image banner */
+    .love-image-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+    }
+    .love-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+      display: block;
+      filter: brightness(0.85) saturate(1.2);
+    }
+    .love-image-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, #1a0a12 100%);
+    }
+    .love-image-overlay {
+      position: absolute;
+      bottom: 0.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.2rem;
+      z-index: 2;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    .congrats-body {
+      padding: 1.5rem 2rem 2.2rem;
+    }
+
+    .congrats-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), #e6a817);
+      color: #1a0a12;
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.35rem 1rem;
+      border-radius: 2rem;
+      margin-bottom: 1rem;
     }
 
     .congrats-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 5vw, 2.6rem);
-      color: var(--gold);
-      margin-bottom: 1rem;
-      animation: shimmer 2s ease-in-out infinite;
+      font-size: clamp(1.9rem, 5.5vw, 2.7rem);
+      color: var(--cream);
+      margin-bottom: 0.6rem;
+      line-height: 1.2;
+      animation: shimmer 2.5s ease-in-out infinite;
     }
+    .congrats-title span { color: var(--gold); font-style: italic; }
+
     @keyframes shimmer {
-      0%, 100% { text-shadow: 0 0 10px rgba(247,201,72,0.5); }
-      50% { text-shadow: 0 0 30px rgba(247,201,72,1), 0 0 60px rgba(247,201,72,0.5); }
+      0%, 100% { text-shadow: 0 0 8px rgba(247,201,72,0.3); }
+      50% { text-shadow: 0 0 25px rgba(247,201,72,0.9), 0 0 50px rgba(232,71,106,0.3); }
+    }
+
+    .congrats-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin: 1rem 0;
+      color: rgba(255,248,240,0.2);
+      font-size: 0.8rem;
+    }
+    .congrats-divider::before,
+    .congrats-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(247,201,72,0.3), transparent);
     }
 
     .congrats-msg {
       font-family: 'Lato', sans-serif;
-      font-size: 1.05rem;
+      font-size: 1rem;
+      color: rgba(255,248,240,0.8);
+      line-height: 1.8;
+    }
+    .congrats-msg strong {
       color: var(--cream);
-      line-height: 1.7;
-      opacity: 0.9;
+      font-weight: 700;
     }
 
-    .hearts-burst {
-      font-size: 2rem;
-      display: block;
-      margin-top: 1.2rem;
-      animation: spin 1.5s ease-in-out infinite alternate;
+    .hearts-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 1.4rem;
+      font-size: 1.5rem;
     }
-    @keyframes spin {
-      from { letter-spacing: 0.2em; }
-      to   { letter-spacing: 0.8em; }
+    .hearts-row span {
+      animation: heartbeat 1.4s ease-in-out infinite;
+    }
+    .hearts-row span:nth-child(2) { animation-delay: 0.2s; }
+    .hearts-row span:nth-child(3) { animation-delay: 0.4s; }
+    .hearts-row span:nth-child(4) { animation-delay: 0.6s; }
+    .hearts-row span:nth-child(5) { animation-delay: 0.8s; }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
     }
   </style>
 </head>
@@ -199,16 +273,39 @@
 
   <!-- Congrats Screen -->
   <div id="congrats-screen">
-    <img class="congrats-gif"
-      src="https://media.giphy.com/media/l0MYGb1LuZ3n7dRnO/giphy.gif"
-      alt="Celebration GIF" />
-    <div class="congrats-title">🎊 Congratulations! 🎊</div>
-    <p class="congrats-msg">
-      Ab hum is saal shaadi karenge! 💍<br/>
-      <em>"Congratulation, now we will marry this year"</em><br/>
-      Tumhara intezaar tha aur ab wait khatam hua 🥰
-    </p>
-    <span class="hearts-burst">💕 💗 💖</span>
+    <!-- Love Image Banner -->
+    <div class="love-image-wrap">
+      <img
+        src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80"
+        alt="Couple in love"
+        onerror="this.src='https://images.unsplash.com/photo-1529634597503-139d3726fed5?w=600&q=80'"
+      />
+      <div class="love-image-overlay">💍</div>
+    </div>
+
+    <!-- Congrats Body -->
+    <div class="congrats-body">
+      <div class="congrats-badge">✨ Official &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Forever ✨</div>
+
+      <div class="congrats-title">
+        Congratulations,<br/><span>Bacchaaaa! 🎊</span>
+      </div>
+
+      <div class="congrats-divider">💕</div>
+
+      <p class="congrats-msg">
+        <strong>Now we will marry this year!</strong><br/>
+        Tumhara intezaar khatam hua aur mera sapna poora hua.<br/>
+        Is duniya mein tum hi meri <em>zindagi ho</em>. 🥰
+      </p>
+	  <div class="congrats-title">
+		<span><strong style="font-size: 20px;">I Love You Bacchaaaaa <span>🌹</span><span>💖</span> </strong> </span>
+	  </div>
+	  
+      <div class="hearts-row">
+        <span>💖</span><span>💍</span><span>💕</span><span>🌹</span><span>✨</span>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -259,31 +356,38 @@
     noBtn.addEventListener('click', (e) => e.preventDefault());
 
     function sayYes() {
+      // Hide NO button immediately wherever it is
+      noBtn.style.display = 'none';
+
       document.getElementById('proposal-screen').style.display = 'none';
       const cs = document.getElementById('congrats-screen');
       cs.style.display = 'block';
       launchConfetti();
     }
 
-    // Mini confetti
+    // Confetti
     function launchConfetti() {
-      const colors = ['#e8476a','#f7c948','#ff9de2','#a8edea','#fff'];
-      for (let i = 0; i < 80; i++) {
+      const colors = ['#e8476a','#f7c948','#ff9de2','#a8edea','#fff','#ff6b9d','#ffd700'];
+      const shapes = ['50%', '0%', '2px'];
+      for (let i = 0; i < 120; i++) {
         setTimeout(() => {
           const c = document.createElement('div');
+          const size = 6 + Math.random() * 8;
+          const shape = shapes[Math.floor(Math.random() * shapes.length)];
           c.style.cssText = `
             position:fixed;
-            width:8px;height:8px;
+            width:${size}px; height:${size}px;
             background:${colors[Math.floor(Math.random()*colors.length)]};
-            border-radius:50%;
+            border-radius:${shape};
             left:${Math.random()*100}vw;
             top:-10px;
-            z-index:99;
-            animation: fall ${2+Math.random()*3}s linear forwards;
+            z-index:999999;
+            pointer-events:none;
+            animation: fall ${2.5+Math.random()*3}s linear forwards;
           `;
           document.body.appendChild(c);
-          setTimeout(() => c.remove(), 5000);
-        }, i * 30);
+          setTimeout(() => c.remove(), 6000);
+        }, i * 25);
       }
     }
   </script>
